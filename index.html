@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SONECA LAB 3D - Precificação Pro</title>
+    <style>
+        :root {
+            --bg-base: #000000; --bg-panel: #111112; --bg-input: #1c1c1e;
+            --accent: #2997ff; --accent-hover: #0077ed; --success: #30d158;
+            --warning: #ffd60a; --danger: #ff453a; --text-main: #f5f5f7;
+            --text-muted: #86868b; --border: #2c2c2e;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+        body { background-color: var(--bg-base); color: var(--text-main); margin: 0; padding: 20px; }
+
+        .app-container {
+            width: 100%; max-width: 1300px; margin: 0 auto;
+            display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 24px;
+        }
+
+        @media (max-width: 1100px) { .app-container { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--bg-panel); border: 1px solid var(--border); border-radius: 20px;
+            padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .header { border-bottom: 1px solid var(--border); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .title h1 { font-size: 22px; font-weight: 700; margin: 0; color: var(--text-main); }
+        .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--accent); letter-spacing: 1px; margin-top: 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px;}
+
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+        .grid-inputs-large { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+        .grid-time { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        .input-group { display: flex; flex-direction: column; gap: 4px; }
+        label { font-size: 12px; color: var(--text-main); font-weight: 600; }
+        .input-hint { font-size: 10px; color: var(--warning); font-style: italic; line-height: 1.2; }
+
+        input {
+            background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main);
+            padding: 10px 12px; border-radius: 8px; font-size: 14px; transition: 0.2s;
+        }
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(41, 151, 255, 0.2); }
+
+        .card { background: var(--bg-input); padding: 16px; border-radius: 12px; border: 1px solid var(--border); position: relative; }
+        
+        .live-cost-box { 
+            background: #1a1a1c; border: 1px dashed var(--text-muted); border-radius: 10px; padding: 16px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+        }
+        .cost-item { display: flex; flex-direction: column; }
+        .cost-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .cost-value { font-size: 20px; font-weight: 800; color: #fff; }
+        .cost-highlight { color: var(--warning); font-size: 24px;}
+
+        .strategies-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; grid-column: span 2; }
+        .strategy-card { 
+            background: #161618; border: 1px solid var(--border); border-radius: 10px; 
+            padding: 12px; cursor: pointer; transition: 0.2s; text-align: center;
+            display: flex; flex-direction: column; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .strategy-card:hover { border-color: var(--accent); background: rgba(41, 151, 255, 0.08); transform: translateY(-2px); }
+        .strat-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        .strat-price { font-size: 18px; font-weight: 800; color: var(--accent); }
+
+        .btn-action { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-add { background: var(--success); color: #000; margin-top: 10px; }
+        .btn-add:hover { opacity: 0.9; }
+        .btn-pdf { background: var(--accent); color: white; margin-top: auto; }
+        .btn-pdf:hover { background: var(--accent-hover); }
+
+        .order-list-container { margin-top: 10px; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; }
+        .order-item { background: #1a1a1e; border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .order-item-info strong { display: block; font-size: 13px; color: #fff; }
+        .order-item-info span { font-size: 12px; color: var(--text-muted); }
+        .order-item-price { text-align: right; }
+        .order-item-price strong { display: block; font-size: 14px; color: var(--accent); }
+        .order-item-price span { font-size: 11px; color: var(--success); }
+        .btn-remove { background: rgba(255, 69, 58, 0.1); color: var(--danger); border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-left: 12px; }
+        .order-total-card { background: #1c1c1e; border: 1px solid var(--accent); border-radius: 10px; padding: 16px; text-align: right; }
+
+        /* NOTA DE IMPRESSÃO */
+        .print-invoice-container { display: none; }
+        @media print {
+            body { background: #ffffff; padding: 0; margin: 0; }
+            .app-container { display: none !important; }
+            .print-invoice-container { display: block !important; }
+            .invoice-box { font-family: Arial, sans-serif; color: #2d3748; max-width: 800px; margin: auto; padding: 20px; }
+            .inv-header { border-bottom: 3px solid #1a365d; padding-bottom: 15px; margin-bottom: 25px; }
+            .inv-header h1 { color: #1a365d; font-size: 20pt; margin: 0 0 5px 0; text-transform: uppercase; }
+            .inv-header p { color: #4a5568; font-size: 11pt; margin: 0; }
+            .inv-info { background: #f7fafc; border-left: 4px solid #2b6cb0; padding: 15px; margin-bottom: 30px; }
+            .inv-info p { margin: 5px 0; font-size: 11pt; }
+            .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            .inv-table th { background: #2b6cb0; color: #fff; padding: 10px; text-align: left; font-size: 10pt; text-transform: uppercase;}
+            .inv-table td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; font-size: 11pt; }
+            .inv-total { background: #edf2f7; font-weight: bold; color: #1a365d; border-top: 2px solid #cbd5e0; }
+            
+            /* Novo bloco PIX */
+            .inv-pix { background: #f0f4f8; border: 2px dashed #a0aec0; border-radius: 8px; padding: 15px; margin-bottom: 30px; text-align: center; }
+            .inv-pix p { margin: 4px 0; }
+            .inv-pix .pix-title { font-size: 11pt; font-weight: bold; color: #1a365d; }
+            .inv-pix .pix-details { font-size: 11pt; color: #4a5568; }
+            .inv-pix .pix-key { font-size: 14pt; font-weight: bold; color: #2b6cb0; margin-top: 8px;}
+
+            .inv-signatures { margin-top: 60px; display: flex; justify-content: space-between; text-align: center; }
+            .inv-sign-box { width: 45%; border-top: 1px solid #a0aec0; padding-top: 10px; }
+            .inv-sign-box strong { display: block; font-size: 11pt; color: #4a5568; }
+            .inv-sign-box span { font-size: 9pt; color: #718096; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="panel">
+            <div class="header">
+                <div>
+                    <div class="title"><h1>SONECA LAB 3D</h1></div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Engenharia de Custos e Faturamento</div>
+                </div>
+            </div>
+
+            <!-- 1. DADOS DO CLIENTE E ORDEM DE SERVIÇO -->
+            <div class="section-title" style="color: var(--success);">1. Ordem de Serviço</div>
+            <div class="grid-inputs-large">
+                <div class="input-group">
+                    <label>Cliente / Empresa (Para a nota)</label>
+                    <input type="text" id="cliNome" placeholder="Ex: Escola, Cliente Direto..." oninput="atualizarNota()">
+                </div>
+                <div class="input-group">
+                    <label>Especificação</label>
+                    <input type="text" id="pecaNome" placeholder="Nome da Peça" oninput="calc()">
+                </div>
+                <div class="input-group">
+                    <label>Detalhes (Cor/Material)</label>
+                    <input type="text" id="pecaDet" placeholder="Ex: Cobre, Pintura Aerógrafo" oninput="calc()">
+                </div>
+                <div class="input-group">
+                    <label>Qtd. Entregue</label>
+                    <input type="text" inputmode="numeric" id="pecaQtd" value="1" oninput="calc()">
+                </div>
+            </div>
+
+            <!-- 2. CONFIGURAÇÕES BASE -->
+            <div class="section-title">2. Configurações Base (Máquina e Material)</div>
+            <div class="grid-inputs">
+                <div class="input-group">
+                    <label>Filamento (R$/kg)</label>
+                    <input type="text" inputmode="decimal" id="matPreco" value="110,00" oninput="calc()">
+                    <span class="input-hint">Média R$ 100,00/kg</span>
+                </div>
+                <div class="input-group">
+                    <label>Sua Hora (R$/h)</label>
+                    <input type="text" inputmode="decimal" id="horaTecnica" value="25,00" oninput="calc()">
+                    <span class="input-hint">Média R$ 20,00</span>
+                </div>
+                <div class="input-group">
+                    <label>Energia (R$/KWh)</label>
+                    <input type="text" inputmode="decimal" id="maqKwh" value="0,85" oninput="calc()">
+                    <span class="input-hint">Média 1 R$/KWh</span>
+                </div>
+                <div class="input-group">
+                    <label>Consumo (W)</label>
+                    <input type="text" inputmode="numeric" id="maqWatts" value="250" oninput="calc()">
+                    <span class="input-hint">Média 350W</span>
+                </div>
+                <div class="input-group">
+                    <label>Depreciação (R$/h)</label>
+                    <input type="text" inputmode="decimal" id="maqDeprecia" value="0,42" oninput="calc()">
+                    <span class="input-hint">Manutenção/Bico</span>
+                </div>
+                <div class="input-group">
+                    <label>Taxa Falha (%)</label>
+                    <input type="text" inputmode="numeric" id="maqFalha" value="5" oninput="calc()">
+                    <span class="input-hint">Risco de perda</span>
+                </div>
+            </div>
+
+            <!-- 3. PARÂMETROS DA MESA -->
+            <div class="section-title">3. Consumo Total da Mesa (Fatiador)</div>
+            <div class="grid-inputs">
+                <div class="input-group">
+                    <label>Peças na Mesa?</label>
+                    <input type="text" inputmode="numeric" id="pecasMesa" value="1" oninput="calc()">
+                </div>
+                <div class="input-group">
+                    <label>Peso Total (g)</label>
+                    <input type="text" inputmode="decimal" id="matPeso" placeholder="Ex: 60,7" oninput="calc()">
+                    <span class="input-hint">Massa com suportes</span>
+                </div>
+                <div class="input-group">
+                    <label>Purga AMS (g)</label>
+                    <input type="text" inputmode="decimal" id="matPurga" value="0" placeholder="Ex: 12,5" oninput="calc()">
+                    <span class="input-hint">Descarte da torre</span>
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Tempo Total de Impressão</label>
+                    <div class="grid-time">
+                        <input type="text" inputmode="numeric" id="maqHoras" placeholder="Horas" oninput="calc()">
+                        <input type="text" inputmode="numeric" id="maqMinutos" placeholder="Min" oninput="calc()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. MÃO DE OBRA EM MINUTOS -->
+            <div class="section-title">4. Seu Tempo & Pós-Processamento</div>
+            <div class="grid-inputs-large">
+                <div class="input-group">
+                    <label>Montagem 3D (Minutos)</label>
+                    <input type="text" inputmode="numeric" id="tempoModelagem" value="0" placeholder="Ex: 15" oninput="calc()">
+                    <span class="input-hint">Tempo Único</span>
+                </div>
+                <div class="input-group">
+                    <label>Remoção Suporte (Minutos)</label>
+                    <input type="text" inputmode="numeric" id="tempoSuporte" value="0" placeholder="Ex: 5" oninput="calc()">
+                    <span class="input-hint">POR PEÇA</span>
+                </div>
+                <div class="input-group">
+                    <label>Pintura/Acab. (Minutos)</label>
+                    <input type="text" inputmode="numeric" id="tempoPintura" value="0" placeholder="Ex: 40" oninput="calc()">
+                    <span class="input-hint">POR PEÇA</span>
+                </div>
+                <div class="input-group">
+                    <label>Insumos/Tintas (R$)</label>
+                    <input type="text" inputmode="decimal" id="custoInsumo" value="0" placeholder="Ex: 2,50" oninput="calc()">
+                    <span class="input-hint">POR PEÇA</span>
+                </div>
+            </div>
+
+            <!-- 5. INDICADOR AO VIVO -->
+            <div class="section-title">5. Raio-X de Custos e Estratégia de Venda</div>
+            
+            <div class="live-cost-box">
+                <div class="cost-item">
+                    <span class="cost-label">Seu Custo da Mesa (Total)</span>
+                    <span class="cost-value" id="lblCustoMesa">R$ 0,00</span>
+                </div>
+                <div class="cost-item" style="text-align: right;">
+                    <span class="cost-label">Seu Custo <span style="color:var(--warning)">POR PEÇA</span></span>
+                    <span class="cost-value cost-highlight" id="lblCustoUnit">R$ 0,00</span>
+                </div>
+            </div>
+
+            <div class="strategies-container">
+                <div class="strategy-card" onclick="aplicarEstrategia('barato')">
+                    <span class="strat-title">Giro Rápido (40%)</span>
+                    <strong class="strat-price" id="btnBarato">R$ 0,00</strong>
+                </div>
+                <div class="strategy-card" onclick="aplicarEstrategia('competitivo')">
+                    <span class="strat-title">Competitivo (60%)</span>
+                    <strong class="strat-price" id="btnCompetitivo">R$ 0,00</strong>
+                </div>
+                <div class="strategy-card" onclick="aplicarEstrategia('lucrativo')">
+                    <span class="strat-title">Premium (80%)</span>
+                    <strong class="strat-price" id="btnLucrativo">R$ 0,00</strong>
+                </div>
+            </div>
+
+            <div class="grid-inputs">
+                <div class="input-group" style="grid-column: span 2;">
+                    <label style="color: var(--success); font-size: 14px;">Preço Final Cobrado (POR PEÇA) R$</label>
+                    <input type="text" inputmode="decimal" id="valCobrado" placeholder="0,00" style="border-color: var(--success); font-weight: bold; font-size: 16px;" oninput="calc()">
+                    <span class="input-hint" style="color: var(--success);">Clique em uma sugestão acima ou digite com vírgula.</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="panel">
+            
+            <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px;">
+                <div class="card" style="background: rgba(48, 209, 88, 0.05); border-color: rgba(48, 209, 88, 0.2);">
+                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Lucro Limpo da Empresa (Total)</div>
+                    <div style="font-size: 24px; font-weight: 800; margin: 4px 0; color: var(--success);" id="resLucroLote">R$ 0,00</div>
+                    <div style="font-size: 11px; color: #a1a1aa; line-height: 1.3;" id="ttLucro">Preencha os dados e informe o preço final.</div>
+                </div>
+            </div>
+
+            <button class="btn-action btn-add" onclick="adicionarItemAoPedido()">+ ADICIONAR ITEM AO PEDIDO</button>
+
+            <div class="section-title" style="margin-top: 24px; color: var(--text-main);">Carrinho / Pedido Atual</div>
+            
+            <div class="order-list-container" id="listaPedidoUI">
+                <div style="text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 20px;">Nenhum item adicionado.</div>
+            </div>
+
+            <div class="order-total-card" id="cardTotalPedido" style="display: none;">
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total do Pedido</div>
+                <div style="font-size: 24px; font-weight: 800; color: var(--text-main);" id="txtTotalPedido">R$ 0,00</div>
+                <div style="font-size: 12px; color: var(--success); margin-top: 4px;" id="txtLucroTotalPedido">Lucro Livre: R$ 0,00</div>
+            </div>
+
+            <!-- BOTÃO DE NOTA FISCAL/PDF -->
+            <button class="btn-action btn-pdf" id="btnGerarNota" onclick="window.print()" style="display: none;">
+                GERAR NOTA COMERCIAL (PDF)
+            </button>
+        </div>
+
+    </div>
+
+    <!-- NOTA IMPRESSA (PDF) -->
+    <div class="print-invoice-container">
+        <div class="invoice-box">
+            <div class="inv-header">
+                <h1>Documento de Entrega e Faturamento</h1>
+                <p>Soneca Lab 3D</p>
+            </div>
+            <div class="inv-info">
+                <p><strong>Prestador:</strong> Nicolau Eustáquio Gonçalves (Soneca Lab 3D)</p>
+                <p><strong>Cliente / Destino:</strong> <span id="printCliente">Não informado</span></p>
+                <p><strong>Data de Emissão:</strong> <span id="printData">--</span></p>
+            </div>
+            <p style="margin-bottom: 20px;">Documento descritivo para fins de registro comercial e comprovação de recebimento de materiais produzidos sob demanda.</p>
+            
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Especificação do Item</th>
+                        <th style="width: 15%; text-align: center;">Qtd</th>
+                        <th style="width: 15%; text-align: right;">Val. Unit.</th>
+                        <th style="width: 20%; text-align: right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="printTabelaItens"></tbody>
+                <tbody>
+                    <tr class="inv-total">
+                        <td colspan="3">VALOR TOTAL DO FATURAMENTO</td>
+                        <td style="text-align: right;" id="printTotalGeral">R$ 0,00</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- BLOCO PIX -->
+            <div class="inv-pix">
+                <p class="pix-title">DADOS PARA PAGAMENTO (PIX)</p>
+                <p class="pix-details">Banco: <strong>Mercado Pago</strong> | Titular: <strong>Nicolau Eustáquio Gonçalves</strong></p>
+                <p class="pix-key">Chave PIX (CPF): 44754550811</p>
+            </div>
+
+            <div class="inv-signatures">
+                <div class="inv-sign-box">
+                    <strong>Nicolau Eustáquio Gonçalves</strong>
+                    <span>Soneca Lab 3D</span>
+                </div>
+                <div class="inv-sign-box">
+                    <strong id="printSignCliente">Responsável pelo Recebimento</strong>
+                    <span id="printSignEmpresa">Instituição / Empresa</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputsParaSalvar = ['maqKwh', 'maqWatts', 'maqDeprecia', 'maqFalha', 'matPreco', 'horaTecnica'];
+
+        function val(id) { 
+            let el = document.getElementById(id);
+            if (!el) return 0;
+            let v = el.value;
+            if (!v) return 0;
+            v = v.trim();
+            if (v.includes(',')) {
+                v = v.replace(/\./g, '').replace(',', '.');
+            }
+            return parseFloat(v) || 0; 
+        }
+
+        function str(id) { 
+            let el = document.getElementById(id);
+            return el ? el.value : ""; 
+        }
+
+        function fmt(num) { 
+            return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); 
+        }
+
+        let itensDoPedido = []; 
+
+        function carregarCache() {
+            inputsParaSalvar.forEach(id => {
+                const salvo = localStorage.getItem('soneca_pro_' + id);
+                if (salvo) document.getElementById(id).value = salvo;
+            });
+            calc();
+        }
+
+        function salvarCache() {
+            inputsParaSalvar.forEach(id => {
+                let el = document.getElementById(id);
+                if(el && el.value !== "") {
+                    localStorage.setItem('soneca_pro_' + id, el.value);
+                }
+            });
+        }
+
+        function calc() {
+            salvarCache();
+            atualizarNota();
+
+            let qtdFinal = val('pecaQtd') > 0 ? val('pecaQtd') : 1;
+            let pecasNaMesa = val('pecasMesa') > 0 ? val('pecasMesa') : 1;
+            let taxaRisco = 1 + (val('maqFalha') / 100);
+            
+            const tempoTotalHoras = val('maqHoras') + (val('maqMinutos') / 60);
+
+            const pesoTotalMesa = val('matPeso') + val('matPurga');
+            const custoMatTotalMesa = ((pesoTotalMesa / 1000) * val('matPreco')) * taxaRisco;
+            
+            const energiaHora = (val('maqWatts') / 1000) * val('maqKwh');
+            const custoMaqTotalMesa = ((energiaHora + val('maqDeprecia')) * tempoTotalHoras) * taxaRisco;
+
+            const custoFisicoMesa = custoMatTotalMesa + custoMaqTotalMesa;
+            
+            const custoMinutoTecnico = val('horaTecnica') / 60;
+            const custoModelagemMesa = val('tempoModelagem') * custoMinutoTecnico; 
+
+            const custoManualPorPeca = (val('tempoSuporte') + val('tempoPintura')) * custoMinutoTecnico;
+            const insumoPorPeca = val('custoInsumo');
+
+            const custoBaseMesa = custoFisicoMesa + custoModelagemMesa + (custoManualPorPeca * pecasNaMesa) + (insumoPorPeca * pecasNaMesa);
+            const custoBaseUnitario = custoBaseMesa / pecasNaMesa; 
+            
+            let elCustoMesa = document.getElementById('lblCustoMesa');
+            if (elCustoMesa) elCustoMesa.innerText = fmt(custoBaseMesa);
+
+            let elCustoUnit = document.getElementById('lblCustoUnit');
+            if (elCustoUnit) elCustoUnit.innerText = fmt(custoBaseUnitario);
+
+            const taxaCartao = 0; 
+            
+            let valBarato = custoBaseUnitario / (1 - 0.40 - taxaCartao);
+            let valComp = custoBaseUnitario / (1 - 0.60 - taxaCartao);
+            let valLucro = custoBaseUnitario / (1 - 0.80 - taxaCartao);
+            
+            if (1 - 0.40 - taxaCartao <= 0) valBarato = custoBaseUnitario * 1.8;
+            if (1 - 0.60 - taxaCartao <= 0) valComp = custoBaseUnitario * 2.8;
+            if (1 - 0.80 - taxaCartao <= 0) valLucro = custoBaseUnitario * 5.0;
+
+            let elBtnBarato = document.getElementById('btnBarato');
+            if (elBtnBarato) elBtnBarato.innerText = fmt(valBarato);
+
+            let elBtnComp = document.getElementById('btnCompetitivo');
+            if (elBtnComp) elBtnComp.innerText = fmt(valComp);
+
+            let elBtnLucro = document.getElementById('btnLucrativo');
+            if (elBtnLucro) elBtnLucro.innerText = fmt(valLucro);
+            
+            window.precoAcao = { barato: valBarato, competitivo: valComp, lucrativo: valLucro };
+
+            let precoCobradoUnit = val('valCobrado');
+            let lucroRealUnit = 0;
+            let lucroRealTotal = 0;
+
+            if (precoCobradoUnit > 0) {
+                lucroRealUnit = precoCobradoUnit - custoBaseUnitario;
+                lucroRealTotal = lucroRealUnit * qtdFinal; 
+            }
+
+            let elResLucro = document.getElementById('resLucroLote');
+            if (elResLucro) elResLucro.innerText = precoCobradoUnit > 0 ? fmt(lucroRealTotal) : "R$ ---";
+            
+            let elTtLucro = document.getElementById('ttLucro');
+            if (elTtLucro) {
+                elTtLucro.innerHTML = precoCobradoUnit > 0 ? `
+                    Seu lucro limpo cobrando <strong>${fmt(precoCobradoUnit)}</strong> por unidade.<br>
+                    Custo de fabricação unitário: ${fmt(custoBaseUnitario)}.
+                ` : "Preencha os dados e informe o preço final.";
+            }
+            
+            return {
+                nome: str('pecaNome') || "Item sem nome",
+                detalhe: str('pecaDet'),
+                qtd: qtdFinal,
+                precoUnit: precoCobradoUnit,
+                precoTotal: precoCobradoUnit * qtdFinal,
+                lucroTotal: lucroRealTotal
+            };
+        }
+
+        function aplicarEstrategia(tipo) {
+            if(!window.precoAcao) return;
+            const valorCalculado = window.precoAcao[tipo].toFixed(2).replace('.', ',');
+            let elVal = document.getElementById('valCobrado');
+            if (elVal) {
+                elVal.value = valorCalculado;
+                calc();
+            }
+        }
+
+        function adicionarItemAoPedido() {
+            const itemAtual = calc();
+            if (itemAtual.precoUnit <= 0) {
+                alert("Clique em uma estratégia de venda ou digite o preço final.");
+                return;
+            }
+            itensDoPedido.push(itemAtual);
+            
+            const camposLimpar = ['pecaNome', 'pecaDet', 'valCobrado', 'matPeso', 'maqHoras', 'maqMinutos'];
+            camposLimpar.forEach(id => {
+                let el = document.getElementById(id);
+                if(el) el.value = "";
+            });
+
+            let elPurga = document.getElementById('matPurga');
+            if (elPurga) elPurga.value = "0";
+
+            let elSup = document.getElementById('tempoSuporte');
+            if (elSup) elSup.value = "0";
+
+            let elPint = document.getElementById('tempoPintura');
+            if (elPint) elPint.value = "0";
+            
+            renderizarPedido();
+            calc();
+        }
+
+        function removerItem(index) {
+            itensDoPedido.splice(index, 1);
+            renderizarPedido();
+        }
+
+        function renderizarPedido() {
+            const uiList = document.getElementById('listaPedidoUI');
+            const pdfList = document.getElementById('printTabelaItens');
+            const cardTotal = document.getElementById('cardTotalPedido');
+            const btnNota = document.getElementById('btnGerarNota');
+            
+            if (uiList) uiList.innerHTML = ""; 
+            if (pdfList) pdfList.innerHTML = "";
+            
+            if (itensDoPedido.length === 0) {
+                if (uiList) uiList.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 20px;">Nenhum item adicionado.</div>`;
+                if (cardTotal) cardTotal.style.display = "none"; 
+                if (btnNota) btnNota.style.display = "none";
+                let elTotalGeral = document.getElementById('printTotalGeral');
+                if (elTotalGeral) elTotalGeral.innerText = "R$ 0,00";
+                return;
+            }
+
+            let somaTotalPedido = 0; 
+            let somaLucroPedido = 0;
+
+            itensDoPedido.forEach((item, index) => {
+                somaTotalPedido += item.precoTotal; 
+                somaLucroPedido += item.lucroTotal;
+
+                if (uiList) {
+                    uiList.innerHTML += `
+                        <div class="order-item">
+                            <div class="order-item-info">
+                                <strong>${item.qtd}x ${item.nome}</strong>
+                                <span>Unidade: ${fmt(item.precoUnit)} | ${item.detalhe}</span>
+                            </div>
+                            <div class="order-item-price" style="display: flex; align-items: center;">
+                                <div>
+                                    <strong>${fmt(item.precoTotal)}</strong>
+                                    <span>Lucro: ${fmt(item.lucroTotal)}</span>
+                                </div>
+                                <button class="btn-remove" onclick="removerItem(${index})">X</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (pdfList) {
+                    pdfList.innerHTML += `
+                        <tr>
+                            <td><strong>${item.nome}</strong><br><small>${item.detalhe}</small></td>
+                            <td style="text-align: center;">${item.qtd} un.</td>
+                            <td style="text-align: right;">${fmt(item.precoUnit)}</td>
+                            <td style="text-align: right;">${fmt(item.precoTotal)}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            let elTxtTotal = document.getElementById('txtTotalPedido');
+            if (elTxtTotal) elTxtTotal.innerText = fmt(somaTotalPedido);
+
+            let elTxtLucro = document.getElementById('txtLucroTotalPedido');
+            if (elTxtLucro) elTxtLucro.innerText = `Lucro Livre: ${fmt(somaLucroPedido)}`;
+
+            let elPrintTotal = document.getElementById('printTotalGeral');
+            if (elPrintTotal) elPrintTotal.innerText = fmt(somaTotalPedido);
+            
+            if (cardTotal) cardTotal.style.display = "block"; 
+            if (btnNota) btnNota.style.display = "block";
+        }
+
+        function atualizarNota() {
+            const cliente = str('cliNome') || "Não informado";
+            
+            let elPrintCliente = document.getElementById('printCliente');
+            if (elPrintCliente) elPrintCliente.innerText = cliente;
+
+            let elPrintData = document.getElementById('printData');
+            if (elPrintData) elPrintData.innerText = new Date().toLocaleDateString('pt-BR');
+
+            let elSignEmpresa = document.getElementById('printSignEmpresa');
+            if (elSignEmpresa) elSignEmpresa.innerText = cliente !== "Não informado" ? cliente : "Instituição / Empresa";
+        }
+
+        window.onload = () => { carregarCache(); renderizarPedido(); atualizarNota(); };
+    </script>
+</body>
+</html>
